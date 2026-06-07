@@ -1,0 +1,17 @@
+services:
+  sentinelwall:
+    build: .
+    image: sentinelwall:latest
+    container_name: sentinelwall
+    ports:
+      - "8000:8000"
+    environment:
+      SENTINELWALL_WEBHOOK_TOKEN: ${SENTINELWALL_WEBHOOK_TOKEN:?set a strong shared secret in your .env file}
+      SENTINELWALL_FIREWALL_DRIVER: ${SENTINELWALL_FIREWALL_DRIVER:-mock}
+      SENTINELWALL_DB_PATH: /data/sentinelwall.db
+    volumes:
+      - sentinelwall-data:/data
+    restart: unless-stopped
+
+volumes:
+  sentinelwall-data:

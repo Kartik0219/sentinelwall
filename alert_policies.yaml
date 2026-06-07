@@ -1,0 +1,18 @@
+# SentinelWall risk-matrix rules.
+# Each rule matches on a substring of alertName (case-insensitive) and a minimum severity.
+# Severity ranking: Low < Medium < High
+rules:
+  - match: "Brute Force"
+    min_severity: "High"
+    action: "BLOCK_IP"
+    ttl_seconds: 3600
+
+  - match: "Anomalous SSH Login Attempt"
+    min_severity: "Medium"
+    action: "BLOCK_IP"
+    ttl_seconds: 7200
+
+  - match: "Malicious IP Communication"
+    min_severity: "Low"
+    action: "BLOCK_IP"
+    ttl_seconds: 86400
