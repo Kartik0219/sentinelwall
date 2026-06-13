@@ -18,9 +18,14 @@ WORKDIR /app
 COPY app ./app
 COPY alert_policies.yaml .
 
+# This Docker image is the public, mock-only demo showcase (see README). Demo mode
+# seeds sample alerts and enables the unauthenticated /simulate endpoint; it is safe
+# because the firewall driver is 'mock'. Real deployments run the process directly
+# (uvicorn) without SENTINELWALL_DEMO_MODE set.
 ENV SENTINELWALL_DB_PATH=/data/sentinelwall.db \
     SENTINELWALL_FIREWALL_DRIVER=mock \
-    SENTINELWALL_POLICIES_PATH=/app/alert_policies.yaml
+    SENTINELWALL_POLICIES_PATH=/app/alert_policies.yaml \
+    SENTINELWALL_DEMO_MODE=1
 
 RUN mkdir -p /data && chown -R sentinel:sentinel /app /data
 USER sentinel
