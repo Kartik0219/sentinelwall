@@ -1,3 +1,16 @@
+---
+title: SentinelWall
+emoji: 🛡️
+colorFrom: red
+colorTo: gray
+sdk: docker
+app_port: 8000
+pinned: false
+---
+
+<!-- The YAML block above configures the Hugging Face Space deployment (Docker SDK,
+     port 8000). GitHub renders it as a small metadata table; it is harmless there. -->
+
 # SentinelWall
 
 A hybrid-cloud incident response & containment agent — a small Cloud SOAR (Security
