@@ -1,9 +1,9 @@
 // Vanilla-JS poller for the SentinelWall SOC dashboard. No frameworks, no build step.
 
-const STATUS_COLORS = {
-  Active: "bg-amber-600",
-  Safe: "bg-emerald-600",
-  Degraded: "bg-red-600",
+const STATUS_CLASS = {
+  Active: "pill-active",
+  Safe: "pill-safe",
+  Degraded: "pill-degraded",
 };
 
 function formatTTL(seconds) {
@@ -18,7 +18,7 @@ async function refreshStatus() {
   const data = await res.json();
   const pill = document.getElementById("status-pill");
   pill.textContent = data.degraded_reason ? `${data.status} — ${data.degraded_reason}` : data.status;
-  pill.className = `px-3 py-1 rounded-full text-sm font-semibold ${STATUS_COLORS[data.status] || "bg-slate-700"}`;
+  pill.className = STATUS_CLASS[data.status] || "";
 }
 
 async function refreshAlerts() {
@@ -26,19 +26,18 @@ async function refreshAlerts() {
   if (!res.ok) return;
   const alerts = await res.json();
   const ticker = document.getElementById("alert-ticker");
-  ticker.innerHTML = alerts
-    .map(
-      (a) => `
-      <div class="border border-slate-800 rounded p-2">
-        <div class="flex justify-between text-slate-400 text-xs">
-          <span>#${a.id} · ${a.received_at}</span>
-          <span>${a.severity}</span>
-        </div>
-        <div class="font-semibold">${a.threat_type}</div>
-        <div class="text-slate-400 text-xs">${a.resource_affected} · ${a.compromised_ip} · ${a.action_taken}</div>
+  ticker.innerHTML = alerts.length
+    ? alerts
+        .map(
+          (a) => `
+      <div class="alert">
+        <div class="alert-top"><span>#${a.id} · ${a.received_at}</span><span>${a.severity}</span></div>
+        <div class="alert-title">${a.threat_type}</div>
+        <div class="alert-sub">${a.resource_affected} · ${a.compromised_ip} · ${a.action_taken}</div>
       </div>`
-    )
-    .join("");
+        )
+        .join("")
+    : `<div class="empty">No alerts yet.</div>`;
 }
 
 async function refreshBlocks() {
@@ -46,17 +45,19 @@ async function refreshBlocks() {
   if (!res.ok) return;
   const blocks = await res.json();
   const tbody = document.getElementById("blocks-table");
-  tbody.innerHTML = blocks
-    .map(
-      (b) => `
-      <tr class="border-t border-slate-800">
-        <td class="py-1">${b.ip}</td>
-        <td class="py-1 text-slate-400">${b.blocked_at}</td>
-        <td class="py-1">${formatTTL(b.ttl_remaining_seconds)}</td>
-        <td class="py-1 text-slate-400">#${b.source_alert_id}</td>
+  tbody.innerHTML = blocks.length
+    ? blocks
+        .map(
+          (b) => `
+      <tr>
+        <td class="ip">${b.ip}</td>
+        <td class="muted">${b.blocked_at}</td>
+        <td>${formatTTL(b.ttl_remaining_seconds)}</td>
+        <td class="muted">#${b.source_alert_id}</td>
       </tr>`
-    )
-    .join("");
+        )
+        .join("")
+    : `<tr><td colspan="4" class="empty">No active containments.</td></tr>`;
 }
 
 async function tick() {
