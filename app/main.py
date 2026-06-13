@@ -7,6 +7,7 @@ from pathlib import Path
 from fastapi import FastAPI
 from fastapi.staticfiles import StaticFiles
 
+from app import demo
 from app.config import settings
 from app.db.session import dispose_engine, init_db
 from app.engine.rules import RulesEngine
@@ -34,6 +35,9 @@ async def lifespan(app: FastAPI):
     worker_task = asyncio.create_task(mitigation_worker(state))
     scanner_task = asyncio.create_task(expiry_scanner(state, settings.expiry_scan_interval_seconds))
 
+    if settings.demo_mode:
+        await demo.seed(state)
+
     logger.info(
         "SentinelWall started",
         extra={"component": "main", "action": "startup", "status": "success", "target_ip": "-"},
@@ -60,6 +64,7 @@ def create_app() -> FastAPI:
     )
     app.include_router(alerts.router)
     app.include_router(dashboard.router)
+    app.include_router(demo.router)
     static_dir = Path(__file__).resolve().parent / "static"
     app.mount("/", StaticFiles(directory=static_dir, html=True), name="static")
     return app

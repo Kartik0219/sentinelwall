@@ -63,5 +63,33 @@ async function tick() {
   await Promise.all([refreshStatus(), refreshAlerts(), refreshBlocks()]);
 }
 
+// Demo mode: reveal the banner + "Simulate attack" button only when the server
+// reports demo mode is on. The button drives the same pipeline as a real alert.
+async function initDemo() {
+  try {
+    const res = await fetch("/api/v1/demo/status");
+    if (!res.ok) return;
+    const { enabled } = await res.json();
+    if (!enabled) return;
+    document.getElementById("demo-banner")?.classList.remove("hidden");
+    const btn = document.getElementById("sim-btn");
+    if (!btn) return;
+    btn.classList.remove("hidden");
+    btn.addEventListener("click", async () => {
+      btn.disabled = true;
+      try {
+        await fetch("/api/v1/demo/simulate", { method: "POST" });
+        await new Promise((r) => setTimeout(r, 500)); // let the worker process it
+        await tick();
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  } catch {
+    /* demo endpoint unavailable — leave controls hidden */
+  }
+}
+
+initDemo();
 tick();
 setInterval(tick, 5000);
